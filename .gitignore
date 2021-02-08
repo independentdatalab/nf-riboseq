@@ -1,0 +1,6 @@
+.nextflow*
+.nextflow/
+data/
+.*.sw*
+*_cache/
+nf/

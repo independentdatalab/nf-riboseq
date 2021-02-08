@@ -1,0 +1,199 @@
+---
+author: "Tatsiana Aneichyk <aneichyk@independentdatalab.com>"
+output:
+    html_document:
+        toc: true
+        toc_depth: 4
+        theme: united
+date: "Last updated: `r format(Sys.time(), '%d %B, %Y')`"
+params:
+    sample_name: "Test"
+    bam_dir: "" 
+    gtf_file: ""
+    cdna_fasta_file: ""
+---
+
+---
+title: "`r paste0("RiboWaltz report: sample ", params$sample_name)`"
+---
+
+
+Set options and parameters:
+
+```{r}
+    knitr::opts_chunk$set(warning = F, message = F, cache = F)
+  
+    sample_name = params$sample_name
+    gtf_file = params$gtf_file
+    bam_dir = params$bam_dir
+    cdna_fasta_file = params$cdna_fasta_file
+    output_dir = file.path(getwd(), sample_name)
+ 
+    dir.create(output_dir, recursive = T, showWarnings = F)
+```
+
+
+Load necessary libraries:
+
+```{r}
+    library(riboWaltz)
+    library(ggpubr)
+    library(knitr)
+```
+
+Load annotation:
+
+```{r}
+    annot = create_annotation(gtfpath = gtf_file)
+```
+
+Load reads:
+
+```{r}
+    refseq_sep_symbol = "|"
+    unfiltered_reads_list = bamtolist( bamfolder = bam_dir, annotation = annot, refseq_sep = refseq_sep_symbol)
+    names(unfiltered_reads_list) = sample_name
+    duplicates_filtered_list = duplicates_filter(unfiltered_reads_list, extremity = "both")
+
+```
+
+Filter lists to 22-34 nt:
+based on 
+[https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3535016/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3535016/) 
+Figure 2A.
+
+
+```{r}
+    reads_list = length_filter(
+        data = duplicates_filtered_list, 
+        length_filter_mode = "custom",
+        length_range = 22:34
+    )
+```
+
+# P-sites calculation
+
+```{r}
+    psite_offset = psite(reads_list)
+    reads_psite_list = psite_info(reads_list, psite_offset)
+
+    write.table(
+        reads_psite_list[[sample_name]], 
+        file = paste0(output_dir, "/", sample_name, ".reads_psite.tsv"),
+        sep  = '\t', 
+        row.names = F
+    )
+    kable(psite_offset)
+```
+
+# Codon and CDS coverage
+
+## Codon coverage
+
+```{r}
+    codon_coverage_result = codon_coverage(
+        reads_psite_list, 
+        annot, 
+        psite = FALSE
+    )
+    write.table(
+        codon_coverage_result, 
+        file = paste0(output_dir, "/", sample_name, ".codon_coverage.tsv"),
+        sep  = '\t', 
+        row.names = F
+    )
+```
+
+## CDS coverage
+
+```{r}
+    cds_coverage_result = cds_coverage(reads_psite_list, annot)
+    write.table(
+        cds_coverage_result, 
+        file = paste0(output_dir, "/", sample_name, ".cds_coverage.tsv"),
+        sep  = '\t', 
+        row.names = F
+    )
+```
+
+# Plots
+
+## Reads length distribution
+
+```{r}
+    length_dist = rlength_distr(reads_list, sample = sample_name)
+    length_dist$plot
+```
+
+## Ends heatmaps
+
+```{r, fig.width = 10}
+    ends_heatmap = rends_heat(
+        reads_list, 
+        annot, 
+        sample = sample_name, 
+        cl = 85, 
+        utr5l = 25, 
+        cdsl = 40, 
+        utr3l = 25
+    )
+    ends_heatmap$plot 
+```
+
+
+## P-sites per region
+
+```{r}
+    psite_region = region_psite(reads_psite_list, annot, sample = sample_name)
+    psite_region$plot
+```
+
+
+## Trinucleotide periodicity
+
+```{r}
+    frames_stratified = frame_psite_length(
+        reads_psite_list, 
+        sample = sample_name,
+        region = "all", 
+        cl = 90
+    )
+    frames_stratified$plot
+```
+
+```{r}
+    frames = frame_psite(reads_psite_list, sample = sample_name, region = "all")
+    frames[["plot"]]
+```
+
+
+## Metaplots
+
+```{r, fig.width = 12}
+    metaprofile = metaprofile_psite(
+        reads_psite_list, 
+        annot, 
+        sample = sample_name,
+        utr5l = 20,
+        cdsl = 40,
+        utr3l = 20,
+        plot_title = paste0(sample_name, " transcript")
+    )
+    metaprofile[[paste0("plot_", sample_name)]]
+```
+
+## Codon usage barplot
+
+```{r, fig.width = 12}
+codon_usage_barplot = codon_usage_psite(
+    reads_psite_list, 
+    annot, 
+    sample = sample_name,
+    fastapath = cdna_fasta_file,
+    fasta_genome = FALSE,
+    refseq_sep = refseq_sep_symbol,
+    frequency_normalization = FALSE) 
+codon_usage_barplot[["plot"]]
+```
+
+
