@@ -1,6 +1,6 @@
 # Nextflow pipleine for preprocessing of ribosomal profiling sequencing
 
- [[_TOC_]]
+[[_TOC_]]
 
 
 The pipeline was developed by 
