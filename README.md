@@ -42,11 +42,16 @@ Default output format [json]: json
 ## Configure the run to specific samples
 
 The key parameters like the sample fastq files location, command line arguments for 
-all the tools, reference files locations are specified in 
+all the tools, reference files locations are listed in `nextflow.config`, with 
+symbolic example pf parameter values. The best way to run it is to copy 
+`nextflow.config` into `my.config`
+
 
 ```
-nextflow.config
+cp nextflow.config my.config
 ```
+
+and modify values in `my.config`
 
 There one can also change the cutadapt adapter sequences and other parameters.
 
@@ -56,13 +61,13 @@ To run the pipeline locally, navigate to directory where the pipeline is located
 (where the `main.nf` is) and run:
 
 ```
-nextflow run main.nf -profile local
+nextflow run main.nf -c my.config -profile local
 ```
 
 To run on AWS:
 
 ```
-nextflow run main.nf -profile awsbatch
+nextflow run main.nf -c my.config -profile awsbatch
 ```
 
 # License

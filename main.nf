@@ -192,7 +192,7 @@ process bowtie2_align {
         -q no_rRNA.fq \
         --un=no_rRNA_tRNA.fq \
         -x ${bowtie2_ref}/tRNA > /dev/null 2> bowtie2_logs/${sampleID}_2_tRNA.log
-    if [[ $reference.ncRNA_fasta.name != "NO_FILE" ]]; then
+    if [[ $reference.ncRNA_fasta != "NO_FILE" ]]; then
         echo "Align to ncRNA"
         bowtie2 ${params.bowtie2_contaminants_cmd_args} \
             -q no_rRNA_tRNA.fq \
@@ -203,7 +203,7 @@ process bowtie2_align {
             --un=${sampleID}_unaligned.fq \
             -x ${bowtie2_ref}/cDNA --no-unal  > ${sampleID}.sam 2> bowtie2_logs/${sampleID}_4_cDNA.log
     fi
-    if [[ $reference.ncRNA_fasta.name == "NO_FILE"  ]]; then
+    if [[ $reference.ncRNA_fasta == "NO_FILE"  ]]; then
         echo "No ncRNA specified, align to cDNA"
         bowtie2 ${params.bowtie2_cdna_cmd_args} \
             -q no_rRNA_tRNA.fq \
@@ -252,7 +252,7 @@ process picard_MarkDuplicates{
   """
     mkdir -p qc/markDuplicates
     mkdir -p bam/${sampleID}/
-    java -jar \${PICARD_JAR} MarkDuplicates ${picard_markdups_cmd_args} \
+    java -jar \${PICARD_JAR} MarkDuplicates ${params.picard_markdups_cmd_args} \
                 -I ${bam} \
                 -O bam/${sampleID}/${sampleID}.srtd.markdup.bam \
                 -M qc/markDuplicates/${sampleID}.markDuplicates
@@ -341,7 +341,7 @@ def checkParamReturnFileReferences(item) {
     if( params.references."${item}")
       return file(params.references."${item}")
     else
-      return(file('NO_FILE'))
+      return('NO_FILE')
 }
 
 def defineReference() {

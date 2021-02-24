@@ -3,4 +3,5 @@
 data/
 .*.sw*
 *_cache/
-nf/
+nf_workdir/
+my.config
