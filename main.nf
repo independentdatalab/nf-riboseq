@@ -91,7 +91,7 @@ process bowtie2_index_ncRNA {
   output:
     file ("**")
   
-  when: run_bowtie2_indexing_1 && ncRNA_fasta.name != 'NO_FILE'
+  when: run_bowtie2_indexing && ncRNA_fasta != 'NO_FILE'
 
   script:
   """

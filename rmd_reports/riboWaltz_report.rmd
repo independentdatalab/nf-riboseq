@@ -50,8 +50,33 @@ Load annotation:
 Load reads:
 
 ```{r}
+
+    checkRefSeqSymbol = function(symbol){
+        tryCatch({
+            unfiltered_reads_list = bamtolist( 
+                bamfolder = bam_dir, 
+                annotation = annot, 
+                refseq_sep = symbol)
+            return (unfiltered_reads_list)
+        
+        }, error = function(e) {
+            message(paste0('Caught an error! refseq_sep symbol is not ',symbol))
+            print(e)
+            return (NA)
+        }
+    )}
+    
+    unfiltered_reads_list = checkRefSeqSymbol("|")
     refseq_sep_symbol = "|"
-    unfiltered_reads_list = bamtolist( bamfolder = bam_dir, annotation = annot, refseq_sep = refseq_sep_symbol)
+    if (is.na(unfiltered_reads_list)) {
+      unfiltered_reads_list =  checkRefSeqSymbol(".") 
+      refseq_sep_symbol = "."
+    }
+
+    if (is.na(unfiltered_reads_list)) {
+      stop("Unrecognized refseq_sep - unable to map transcript IDs to annotation")
+    }
+
     names(unfiltered_reads_list) = sample_name
     duplicates_filtered_list = duplicates_filter(unfiltered_reads_list, extremity = "both")
 

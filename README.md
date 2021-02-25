@@ -70,6 +70,20 @@ To run on AWS:
 nextflow run main.nf -c my.config -profile awsbatch
 ```
 
+## Troubleshooting
+
+### Failed alignment or indexing
+
+If you get an error during alignment or indexing, check that the file locations 
+are set-up correctly, remove bowtie index directory and run the pipeline again without
+`-resume` option. 
+
+It is possible that during previous run indexing completed only partially, but the directory 
+with the index was already created. This can happen when the pipeline was interrupted 
+due to lost internet connection, or lack of available memory or killed by the user.
+The pipeline then identifies the presence of index directory, and assumes that 
+indexing can be skipped. Removing index directory will force the pipeline to index again. 
+
 # License
 
  This software is distributed under the BSD-style License. See LICENSE for details.
