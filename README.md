@@ -84,6 +84,12 @@ due to lost internet connection, or lack of available memory or killed by the us
 The pipeline then identifies the presence of index directory, and assumes that 
 indexing can be skipped. Removing index directory will force the pipeline to index again. 
 
+### Dashes and special characters in file names
+
+The pipeline will produce an error message and fail if your file name contains any special 
+characters or dash (-). It is safest to only use alphanumeric characters, `.` and `_` in your
+file names.
+
 # License
 
  This software is distributed under the BSD-style License. See LICENSE for details.
